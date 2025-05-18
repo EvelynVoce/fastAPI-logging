@@ -5,8 +5,22 @@ import uuid
 import time
 from log_config import info_logger, error_logger
 import traceback
+from pyinstrument import Profiler
 
 app = FastAPI()
+
+
+@app.middleware("http")
+async def profile_request(request: Request, call_next):
+    profiler = Profiler()
+    profiler.start()
+
+    response = await call_next(request)
+
+    profiler.stop()
+    print(profiler.output_text(unicode=True, color=True))
+
+    return response
 
 
 class LoggingMiddleware(BaseHTTPMiddleware):
